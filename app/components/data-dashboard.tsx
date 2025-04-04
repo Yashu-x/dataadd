@@ -10,6 +10,7 @@ import { ReloadIcon } from "@radix-ui/react-icons"
 interface DataItem {
   key: string
   value: string
+  Name :string
 }
 
 export function DataDashboard() {

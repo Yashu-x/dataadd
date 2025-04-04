@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 interface DataItem {
   key: string
   value: string
+  Name: string
 }
 
 interface DataTableProps {
@@ -36,6 +37,7 @@ export function DataTable({ data, loading }: DataTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-1/2">Name</TableHead>
             <TableHead className="w-1/2">Key</TableHead>
             <TableHead className="w-1/2">Value</TableHead>
           </TableRow>
@@ -43,6 +45,7 @@ export function DataTable({ data, loading }: DataTableProps) {
         <TableBody>
           {data.map((item, index) => (
             <TableRow key={index}>
+              <TableCell className="font-medium">{item.Name}</TableCell>
               <TableCell className="font-medium">{item.key}</TableCell>
               <TableCell>{item.value}</TableCell>
             </TableRow>

@@ -12,6 +12,7 @@ import { ReloadIcon } from "@radix-ui/react-icons"
 interface DataItem {
   key: string
   value: string
+  Name :string
 }
 
 interface DataFormProps {
@@ -21,6 +22,7 @@ interface DataFormProps {
 export function DataForm({ onSubmit }: DataFormProps) {
   const [key, setKey] = useState("")
   const [value, setValue] = useState("")
+  const [Name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,10 +39,13 @@ export function DataForm({ onSubmit }: DataFormProps) {
     setError(null)
 
     try {
-      await onSubmit({ key, value })
+
+      await onSubmit({ key, value , Name })
       // Reset form after successful submission
+      setName("")
       setKey("")
       setValue("")
+     
     } catch (err) {
       setError("Failed to submit data. Please try again.")
     } finally {
@@ -52,6 +57,16 @@ export function DataForm({ onSubmit }: DataFormProps) {
     <Card>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+            <Label htmlFor="Name">Name</Label>
+            <Input
+              id="Name"
+              value={Name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter Name"
+              disabled={isSubmitting}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="key">Key</Label>
             <Input

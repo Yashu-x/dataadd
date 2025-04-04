@@ -2,13 +2,16 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { connectToMongo } from '@/lib/mongo';
 
 export interface DataDocument extends Document {
+    Name: string;
     key: String;
     value: String;
 }
 
 const DataSchema: Schema = new Schema<DataDocument>({
+    Name: { type: String, required: true },
     key: { type: String, required: true, unique: true },
     value: { type: String, required: true },
+    
 },{
     timestamps: true,
 }
