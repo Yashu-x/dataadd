@@ -1,123 +1,3 @@
-// "use client"
-
-// import type React from "react"
-
-// import { useState } from "react"
-// import { Button } from "@/components/ui/button"
-// import { Input } from "@/components/ui/input"
-// import { Label } from "@/components/ui/label"
-// import { Card, CardContent } from "@/components/ui/card"
-// import { ReloadIcon } from "@radix-ui/react-icons"
-
-// interface DataItem {
-//   key: string
-//   value: string
-//   Name :string
-//   clasification:string
-// }
-
-// interface DataFormProps {
-//   onSubmit: (data: DataItem) => Promise<void>
-// }
-
-// export function DataForm({ onSubmit }: DataFormProps) {
-//   const [key, setKey] = useState("")
-//   const [value, setValue] = useState("")
-//   const [Name, setName] = useState("")
-//   const [clasification, setClasification] = useState("")
-//   const [isSubmitting, setIsSubmitting] = useState(false)
-//   const [error, setError] = useState<string | null>(null)
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault()
-
-//     // Basic validation
-//     if (!key.trim() || !value.trim()) {
-//       setError("Both key and value are required")
-//       return
-//     }
-
-//     setIsSubmitting(true)
-//     setError(null)
-
-//     try {
-
-//       await onSubmit({ key, value , Name , clasification})
-//       // Reset form after successful submission
-//       setName("")
-//       setKey("")
-//       setValue("")
-//       setClasification("")
-     
-//     } catch (err) {
-//       setError("Failed to submit data. Please try again.")
-//     } finally {
-//       setIsSubmitting(false)
-//     }
-//   }
-
-//   return (
-//     <Card>
-//       <CardContent className="pt-6">
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//         <div className="space-y-2">
-//             <Label htmlFor="Name">Event Name</Label>
-//             <Input
-//               id="Name"
-//               value={Name}
-//               onChange={(e) => setName(e.target.value)}
-//               placeholder="Enter Name"
-//               disabled={isSubmitting}
-//             />
-//           </div>
-//           <div className="space-y-2">
-//             <Label htmlFor="clasification">Classification</Label>
-//             <Input
-//               id="clasification"
-//               value={clasification}
-//               onChange={(e) => setClasification(e.target.value)}
-//               placeholder="Enter clasification"
-//               disabled={isSubmitting}
-//             />
-//             </div>
-          
-//           <div className="space-y-2">
-//             <Label htmlFor="key">player Name</Label>
-//             <Input
-//               id="key"
-//               value={key}
-//               onChange={(e) => setKey(e.target.value)}
-//               placeholder="Enter player name"
-//               disabled={isSubmitting}
-//             />
-//           </div>
-//           <div className="space-y-2">
-//             <Label htmlFor="value">Performence</Label>
-//             <Input
-//               id="value"
-//               value={value}
-//               onChange={(e) => setValue(e.target.value)}
-//               placeholder="Enter value"
-//               disabled={isSubmitting}
-//             />
-//           </div>
-//           {error && <div className="text-red-500 text-sm">{error}</div>}
-//           <Button type="submit" disabled={isSubmitting} className="w-full">
-//             {isSubmitting ? (
-//               <>
-//                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-//                 Submitting...
-//               </>
-//             ) : (
-//               "Add Data"
-//             )}
-//           </Button>
-//         </form>
-//       </CardContent>
-//     </Card>
-//   )
-// }
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -138,277 +18,256 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-// import { DataItem } from "@/types/data"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-
 interface DataItem {
-  key: string
-  value: string
-  Name: string
+  sportEvent: string
+  eventName: string
   classification: string
+  gender: string
+  athleteName: string
+  value: string
 }
 
 interface DataFormProps {
   onSubmit: (data: DataItem) => Promise<void>
 }
-const predefinedNames = ["Event 1", "Event 2", "Event 3", "Tournament", "Match"]
-const predefinedClassifications = ["Sports", "Academic", "Cultural", "Professional"]
-const predefinedPlayers = ["Player 1", "Player 2", "Player 3", "Team A", "Team B"]
+
+const predefinedEvents = ["100m", "200m", "400m", "800m"]
+const predefinedEventNames = ["Olympics", "World Championship", "National Games", "College Tournament"]
+const predefinedClassifications = ["Track", "Field", "Marathon", "Relay"]
+const predefinedGenders = ["male", "female"]
+const predefinedAthletes = ["Usain Bolt", "Elaine Thompson", "Wayde van Niekerk", "Faith Kipyegon"]
 
 export function DataForm({ onSubmit }: DataFormProps) {
-  const [formData, setFormData] = useState<Omit<DataItem, 'unit'>>({
-    Name: "",
-    classification: "",
-    key: "",
-    value: ""
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Load saved selections from localStorage or use empty defaults
+  const loadSavedSelections = () => {
+    const saved = localStorage.getItem('formSelections');
+    return saved ? JSON.parse(saved) : {
+      sportEvent: "",
+      eventName: "",
+      classification: "",
+      gender: "",
+      athleteName: "",
+      value: ""
+    };
+  };
 
+  const [formData, setFormData] = useState<DataItem>(loadSavedSelections());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // State for dropdown open/close
-  const [openName, setOpenName] = useState(false)
-  const [openClassification, setOpenClassification] = useState(false)
-  const [openPlayer, setOpenPlayer] = useState(false)
+  // Dropdown states
+  const [openSportEvent, setOpenSportEvent] = useState(false);
+  const [openEventName, setOpenEventName] = useState(false);
+  const [openClassification, setOpenClassification] = useState(false);
+  const [openGender, setOpenGender] = useState(false);
+  const [openAthlete, setOpenAthlete] = useState(false);
 
-  // Load saved options from localStorage
-  const [nameOptions, setNameOptions] = useState<string[]>(predefinedNames)
-  const [classificationOptions, setClassificationOptions] = useState<string[]>(predefinedClassifications)
-  const [playerOptions, setPlayerOptions] = useState<string[]>(predefinedPlayers)
+  // Options with localStorage persistence
+  const [sportEventOptions, setSportEventOptions] = useState<string[]>(predefinedEvents);
+  const [eventNameOptions, setEventNameOptions] = useState<string[]>(predefinedEventNames);
+  const [classificationOptions, setClassificationOptions] = useState<string[]>(predefinedClassifications);
+  const [genderOptions, setGenderOptions] = useState<string[]>(predefinedGenders);
+  const [athleteOptions, setAthleteOptions] = useState<string[]>(predefinedAthletes);
 
+  // Save selections whenever they change
   useEffect(() => {
-    const savedNames = JSON.parse(localStorage.getItem('nameOptions') || '[]')
-    const savedClassifications = JSON.parse(localStorage.getItem('classificationOptions') || '[]')
-    const savedPlayers = JSON.parse(localStorage.getItem('playerOptions') || '[]')
+    localStorage.setItem('formSelections', JSON.stringify(formData));
+  }, [formData]);
+
+  // Load saved options from localStorage on mount
+  useEffect(() => {
+    const loadOptions = () => {
+      const savedOptions = {
+        sportEvents: JSON.parse(localStorage.getItem('sportEventOptions') || '[]'),
+        eventNames: JSON.parse(localStorage.getItem('eventNameOptions') || '[]'),
+        classifications: JSON.parse(localStorage.getItem('classificationOptions') || '[]'),
+        athletes: JSON.parse(localStorage.getItem('athleteOptions') || '[]')
+      };
+      
+      setSportEventOptions([...new Set([...predefinedEvents, ...savedOptions.sportEvents])]);
+      setEventNameOptions([...new Set([...predefinedEventNames, ...savedOptions.eventNames])]);
+      setClassificationOptions([...new Set([...predefinedClassifications, ...savedOptions.classifications])]);
+      setAthleteOptions([...new Set([...predefinedAthletes, ...savedOptions.athletes])]);
+    };
     
-    setNameOptions([...new Set([...predefinedNames, ...savedNames])])
-    setClassificationOptions([...new Set([...predefinedClassifications, ...savedClassifications])])
-    setPlayerOptions([...new Set([...predefinedPlayers, ...savedPlayers])])
-    
-    const lastSelected = JSON.parse(localStorage.getItem('lastSelected') || '{}')
-    setFormData(prev => ({
-      ...prev,
-      Name: lastSelected.Name || "",
-      classification: lastSelected.classification || "",
-      key: lastSelected.key || ""
-    }))
-  }, [])
+    loadOptions();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
-    if (!formData.Name || !formData.classification || !formData.key || !formData.value) {
-      setError("All fields are required")
-      return
+    // Validate all fields
+    if (!formData.sportEvent || !formData.eventName || !formData.classification || 
+        !formData.gender || !formData.athleteName || !formData.value) {
+      setError("All fields are required");
+      return;
     }
 
-    setIsSubmitting(true)
+    // Validate numeric value
+    if (!/^\d*\.?\d+$/.test(formData.value)) {
+      setError("Please enter a valid number (e.g. 9.58)");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      await onSubmit({
-        ...formData,
-        value: formData.value.toString() // Convert to string for the form
-      })
+      await onSubmit(formData);
 
       // Update options with new values if they don't exist
       const updates = {
-        names: formData.Name && !nameOptions.includes(formData.Name) ? [...nameOptions, formData.Name] : nameOptions,
-        classifications: formData.classification && !classificationOptions.includes(formData.classification) 
-          ? [...classificationOptions, formData.classification] 
-          : classificationOptions,
-        players: formData.key && !playerOptions.includes(formData.key) ? [...playerOptions, formData.key] : playerOptions
-      }
+        sportEvents: formData.sportEvent && !sportEventOptions.includes(formData.sportEvent) ? 
+          [...sportEventOptions, formData.sportEvent] : sportEventOptions,
+        eventNames: formData.eventName && !eventNameOptions.includes(formData.eventName) ? 
+          [...eventNameOptions, formData.eventName] : eventNameOptions,
+        classifications: formData.classification && !classificationOptions.includes(formData.classification) ? 
+          [...classificationOptions, formData.classification] : classificationOptions,
+        athletes: formData.athleteName && !athleteOptions.includes(formData.athleteName) ? 
+          [...athleteOptions, formData.athleteName] : athleteOptions
+      };
 
-      setNameOptions(updates.names)
-      setClassificationOptions(updates.classifications)
-      setPlayerOptions(updates.players)
+      // Update state and localStorage
+      setSportEventOptions(updates.sportEvents);
+      setEventNameOptions(updates.eventNames);
+      setClassificationOptions(updates.classifications);
+      setAthleteOptions(updates.athletes);
 
-      localStorage.setItem('nameOptions', JSON.stringify(updates.names))
-      localStorage.setItem('classificationOptions', JSON.stringify(updates.classifications))
-      localStorage.setItem('playerOptions', JSON.stringify(updates.players))
-      localStorage.setItem('lastSelected', JSON.stringify({
-        Name: formData.Name,
-        classification: formData.classification,
-        key: formData.key
-      }))
+      localStorage.setItem('sportEventOptions', JSON.stringify(updates.sportEvents));
+      localStorage.setItem('eventNameOptions', JSON.stringify(updates.eventNames));
+      localStorage.setItem('classificationOptions', JSON.stringify(updates.classifications));
+      localStorage.setItem('athleteOptions', JSON.stringify(updates.athletes));
 
-      // Reset only the performance value
-      setFormData(prev => ({ ...prev, value: "" }))
+      // Reset only the value field while keeping other selections
+      setFormData(prev => ({ ...prev, value: "" }));
     } catch (err: any) {
-      setError(err.message || "Failed to submit data. Please try again.")
+      setError(err.message || "Failed to submit data. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
+
+  // Reusable dropdown component
+  const renderDropdown = (
+    label: string,
+    value: string,
+    options: string[],
+    open: boolean,
+    setOpen: (val: boolean) => void,
+    fieldName: keyof DataItem
+  ) => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+          >
+            {value || `Select ${label.toLowerCase()}...`}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0">
+          <Command>
+            <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup className="max-h-60 overflow-y-auto">
+              {options.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={(currentValue) => {
+                    setFormData({...formData, [fieldName]: currentValue});
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 
   return (
     <Card>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Sport Event Dropdown */}
+          {renderDropdown(
+            "Sport Event",
+            formData.sportEvent,
+            sportEventOptions,
+            openSportEvent,
+            setOpenSportEvent,
+            "sportEvent"
+          )}
+
           {/* Event Name Dropdown */}
-          <div className="space-y-2">
-            <Label>Event Name</Label>
-            <Popover open={openName} onOpenChange={setOpenName}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openName}
-                  className="w-full justify-between"
-                >
-                  {formData.Name || "Select event..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search event..." 
-                    onValueChange={(value) => {
-                      if (value && !nameOptions.includes(value)) {
-                        setNameOptions([...nameOptions, value])
-                      }
-                    }}
-                  />
-                  <CommandEmpty>No event found.</CommandEmpty>
-                  <CommandGroup className="max-h-60 overflow-y-auto">
-                    {nameOptions.map((name) => (
-                      <CommandItem
-                        key={name}
-                        value={name}
-                        onSelect={(currentValue) => {
-                          setFormData({...formData, Name: currentValue})
-                          setOpenName(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            formData.Name === name ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
+          {renderDropdown(
+            "Event Name",
+            formData.eventName,
+            eventNameOptions,
+            openEventName,
+            setOpenEventName,
+            "eventName"
+          )}
 
           {/* Classification Dropdown */}
-          <div className="space-y-2">
-            <Label>Classification</Label>
-            <Popover open={openClassification} onOpenChange={setOpenClassification}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openClassification}
-                  className="w-full justify-between"
-                >
-                  {formData.classification || "Select classification..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search classification..." 
-                    onValueChange={(value) => {
-                      if (value && !classificationOptions.includes(value)) {
-                        setClassificationOptions([...classificationOptions, value])
-                      }
-                    }}
-                  />
-                  <CommandEmpty>No classification found.</CommandEmpty>
-                  <CommandGroup className="max-h-60 overflow-y-auto">
-                    {classificationOptions.map((classification) => (
-                      <CommandItem
-                        key={classification}
-                        value={classification}
-                        onSelect={(currentValue) => {
-                          setFormData({...formData, classification: currentValue})
-                          setOpenClassification(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            formData.classification === classification ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {classification}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
+          {renderDropdown(
+            "Classification",
+            formData.classification,
+            classificationOptions,
+            openClassification,
+            setOpenClassification,
+            "classification"
+          )}
+            {/* Athlete Name Dropdown */}
+            {renderDropdown(
+            "Athlete Name",
+            formData.athleteName,
+            athleteOptions,
+            openAthlete,
+            setOpenAthlete,
+            "athleteName"
+          )}
 
-          {/* Player Name Dropdown */}
-          <div className="space-y-2">
-            <Label>Player Name</Label>
-            <Popover open={openPlayer} onOpenChange={setOpenPlayer}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openPlayer}
-                  className="w-full justify-between"
-                >
-                  {formData.key || "Select player..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search player..." 
-                    onValueChange={(value) => {
-                      if (value && !playerOptions.includes(value)) {
-                        setPlayerOptions([...playerOptions, value])
-                      }
-                    }}
-                  />
-                  <CommandEmpty>No player found.</CommandEmpty>
-                  <CommandGroup className="max-h-60 overflow-y-auto">
-                    {playerOptions.map((player) => (
-                      <CommandItem
-                        key={player}
-                        value={player}
-                        onSelect={(currentValue) => {
-                          setFormData({...formData, key: currentValue})
-                          setOpenPlayer(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            formData.key === player ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {player}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
+          {/* Gender Dropdown */}
+          {renderDropdown(
+            "Gender",
+            formData.gender,
+            genderOptions,
+            openGender,
+            setOpenGender,
+            "gender"
+          )}
 
           {/* Performance Input */}
           <div className="space-y-2">
-            <Label htmlFor="value">Performance</Label>
+            <Label htmlFor="value">Performance Time (seconds)</Label>
             <Input
               id="value"
               value={formData.value}
-              onChange={(e) => setFormData({...formData, value: e.target.value})}
-              placeholder="Enter value "
+              onChange={(e) => {
+                if (/^\d*\.?\d*$/.test(e.target.value)) {
+                  setFormData({...formData, value: e.target.value});
+                }
+              }}
+              placeholder="Enter time (e.g. 9.58)"
               disabled={isSubmitting}
             />
           </div>
@@ -421,11 +280,11 @@ export function DataForm({ onSubmit }: DataFormProps) {
                 Submitting...
               </>
             ) : (
-              "Add Data"
+              "Add Record"
             )}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

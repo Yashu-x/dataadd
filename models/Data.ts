@@ -2,23 +2,28 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { connectToMongo } from '@/lib/mongo';
 
 export interface DataDocument extends Document {
-    Name: string;
-    key: String;
-    value: String;
-    classification:String
+    sportEvent: string; 
+    eventName: string;
+    classification: string; 
+    gender: string;      
+    athleteName: string; 
+    value: number;
+    unit: string;
 }
 
 const DataSchema: Schema = new Schema<DataDocument>({
-    Name: { type: String, required: true },
+    eventName: { type: String, required: true },
     classification: { type: String, required: true },
-    key: { type: String, required: true, unique: true },
-    value: { type: Number, required: true },
-    
+    sportEvent: { type: String, required: true },
+    gender: { type: String, required: true, enum: ['male', 'female'] },
+    athleteName: { type: String, required: true },
+    value: { type: Number, required: true }, 
+    unit: { type: String,  default: 's' }, 
     
 },
-{
-    timestamps: true,
-}
+// {
+//     timestamps: true,
+// }
 );
 
 async function init():Promise<void> {
