@@ -5,14 +5,18 @@ export interface DataDocument extends Document {
     Name: string;
     key: String;
     value: String;
+    classification:String
 }
 
 const DataSchema: Schema = new Schema<DataDocument>({
     Name: { type: String, required: true },
+    classification: { type: String, required: true },
     key: { type: String, required: true, unique: true },
-    value: { type: String, required: true },
+    value: { type: Number, required: true },
     
-},{
+    
+},
+{
     timestamps: true,
 }
 );
@@ -31,3 +35,8 @@ init().catch((error) => {
 });
 
 export const DataModel = mongoose.models.Data || mongoose.model<DataDocument>('Data', DataSchema);
+
+
+
+
+

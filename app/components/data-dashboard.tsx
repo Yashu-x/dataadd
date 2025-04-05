@@ -1,77 +1,93 @@
-"use client"
 
-import { useEffect, useState } from "react"
-import { DataTable } from "@/app/components/data-table"
-import { DataForm } from "@/app/components/data-form"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ReloadIcon } from "@radix-ui/react-icons"
+
+"use client";
+
+import { useEffect, useState } from "react";
+import { DataTable } from "@/app/components/data-table";
+import { DataForm } from "@/app/components/data-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DataItem {
-  key: string
-  value: string
-  Name :string
+  key: string;
+  value: string;
+  Name: string;
+  classification: string;
 }
 
 export function DataDashboard() {
-  const [data, setData] = useState<DataItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [data, setData] = useState<DataItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [searchValue, setSearchValue] = useState("");
+  const [searchField, setSearchField] = useState<"Name" | "classification" | "key">("Name");
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      const response = await fetch("http://localhost:3000/api/data")
+      setLoading(true);
+      const response = await fetch(
+        `/api/data?sortOrder=${sortOrder}&searchField=${searchField}&searchValue=${searchValue}`
+      );
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`)
+        throw new Error(`Error: ${response.status}`);
       }
 
-      const result = await response.json()
-      setData(result)
-      setLastUpdated(new Date())
-      setError(null)
+      const result = await response.json();
+      setData(result);
+      setLastUpdated(new Date());
+      setError(null);
     } catch (err) {
-      setError("Failed to fetch data. Please try again later.")
-      console.error("Error fetching data:", err)
+      setError("Failed to fetch data. Please try again later.");
+      console.error("Error fetching data:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    // Initial fetch
-    fetchData()
+    fetchData();
+  }, [sortOrder, searchField, searchValue]);
 
-    // Set up interval for fetching data every minute
-    const intervalId = setInterval(fetchData, 60000)
+  const handleSearchValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value);
+  };
 
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId)
-  }, [])
+  const handleSearchFieldChange = (value: "Name" | "classification" | "key") => {
+    setSearchField(value);
+  };
 
   const handleAddData = async (newData: DataItem) => {
     try {
-      const response = await fetch("http://localhost:3000/api/data", {
+      const response = await fetch("/api/data", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(newData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`)
+        throw new Error(`Error: ${response.status}`);
       }
 
-      // Refresh data after successful submission
-      fetchData()
+      fetchData();
     } catch (err) {
-      setError("Failed to add data. Please try again.")
-      console.error("Error adding data:", err)
+      setError("Failed to add data. Please try again.");
+      console.error("Error adding data:", err);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -93,6 +109,28 @@ export function DataDashboard() {
               Refresh
             </button>
           </div>
+          <div className="mt-4 flex gap-2">
+            <Select 
+              value={searchField} 
+              onValueChange={handleSearchFieldChange}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Search by..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Name">Event Name</SelectItem>
+                <SelectItem value="classification">Classification</SelectItem>
+                <SelectItem value="key">Player Name</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              type="text"
+              placeholder={`Search by ${searchField.toLowerCase()}...`}
+              value={searchValue}
+              onChange={handleSearchValueChange}
+              className="flex-1"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="table">
@@ -104,7 +142,17 @@ export function DataDashboard() {
               {error ? (
                 <div className="text-red-500 p-4 rounded-md bg-red-50">{error}</div>
               ) : (
-                <DataTable data={data} loading={loading} />
+                <>
+                  <div className="flex justify-end mb-2">
+                    <button
+                      onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      Sort by Value ({sortOrder === "asc" ? "Ascending" : "Descending"})
+                    </button>
+                  </div>
+                  <DataTable data={data} loading={loading} />
+                </>
               )}
             </TabsContent>
             <TabsContent value="add">
@@ -114,6 +162,5 @@ export function DataDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
