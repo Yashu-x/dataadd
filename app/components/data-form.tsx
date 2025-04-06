@@ -35,7 +35,7 @@ interface DataFormProps {
 }
 
 const predefinedEvents = ["100m", "200m", "400m", "800m"]
-const predefinedEventNames = ["Olympics", "World Championship", "National Games", "College Tournament"]
+const predefinedEventNames = ["U17.1", "U17.2", "U17.3", "U17.4", "U17.5","U17.6", "U17.7", "U17.8", "U17.9", "U17.10","U17.11", "U17.12", "U17.13","U20.1", "U20.2","U20.3", "U20.4", "U20.5", "U20.6", "U20.7","U20.8", "U20.9", "U20.10", "U20.11", "U20.12","U20.13"]
 const predefinedClassifications = ["Track", "Field", "Marathon", "Relay"]
 const predefinedGenders = ["male", "female"]
 const predefinedAthletes = ["Usain Bolt", "Elaine Thompson", "Wayde van Niekerk", "Faith Kipyegon"]
@@ -236,6 +236,15 @@ export function DataForm({ onSubmit }: DataFormProps) {
             setOpenClassification,
             "classification"
           )}
+           {/* Athlete Name Dropdown */}
+           {renderDropdown(
+            "Athlete Name",
+            formData.athleteName,
+            athleteOptions,
+            openAthlete,
+            setOpenAthlete,
+            "athleteName"
+          )}
 
           {/* Gender Dropdown */}
           {renderDropdown(
@@ -247,19 +256,11 @@ export function DataForm({ onSubmit }: DataFormProps) {
             "gender"
           )}
 
-          {/* Athlete Name Dropdown */}
-          {renderDropdown(
-            "Athlete Name",
-            formData.athleteName,
-            athleteOptions,
-            openAthlete,
-            setOpenAthlete,
-            "athleteName"
-          )}
+         
 
           {/* Performance Input */}
           <div className="space-y-2">
-            <Label htmlFor="value">Performance Time (seconds)</Label>
+            <Label htmlFor="value">Performance</Label>
             <Input
               id="value"
               value={formData.value}
@@ -268,7 +269,7 @@ export function DataForm({ onSubmit }: DataFormProps) {
                   setFormData({...formData, value: e.target.value});
                 }
               }}
-              placeholder="Enter time (e.g. 9.58)"
+              placeholder="Enter performance "
               disabled={isSubmitting}
             />
           </div>
