@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -47,6 +46,12 @@ export function DataDashboard() {
     gender: ['male', 'female']
   });
 
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -64,7 +69,8 @@ export function DataDashboard() {
 
       const response = await fetch(`/api/data?${params.toString()}`);
       if (!response.ok) throw new Error(`Error: ${response.status}`);
-      setData(await response.json());
+      const result = await response.json();
+      setData(result);
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {
@@ -87,17 +93,19 @@ export function DataDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-    // Fetch initial filter options
-    (async () => {
-      await Promise.all([
-        fetchFilterOptions('sportEvent'),
-        fetchFilterOptions('eventName'),
-        fetchFilterOptions('athleteName'),
-        fetchFilterOptions('classification')
-      ]);
-    })();
-  }, [sortOrder, searchValue, searchField, filters]);
+    if (isClient) {
+      fetchData();
+      // Fetch initial filter options
+      (async () => {
+        await Promise.all([
+          fetchFilterOptions('sportEvent'),
+          fetchFilterOptions('eventName'),
+          fetchFilterOptions('athleteName'),
+          fetchFilterOptions('classification')
+        ]);
+      })();
+    }
+  }, [isClient, sortOrder, searchValue, searchField, filters]);
 
   const handleFilterChange = (field: keyof DataItem, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -105,10 +113,14 @@ export function DataDashboard() {
 
   const handleAddData = async (newData: DataItem) => {
     try {
+      const dataToSend = {
+        ...newData,
+        gender: newData.gender.toLowerCase()
+      };
       const response = await fetch("/api/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newData)
+        body: JSON.stringify(dataToSend) // Fixed: using dataToSend instead of newData
       });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       await fetchData();
@@ -130,8 +142,8 @@ export function DataDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Sports Performance Data</CardTitle>
-              <CardDescription>
-                {lastUpdated ? `Last updated: ${lastUpdated.toLocaleString()}` : "Loading..."}
+              <CardDescription suppressHydrationWarning>
+                {isClient && lastUpdated ? `Last updated: ${lastUpdated.toLocaleString()}` : "Loading..."}
               </CardDescription>
             </div>
             <button

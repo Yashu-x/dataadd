@@ -55,7 +55,7 @@ export function DataTable({ data, loading }: DataTableProps) {
               <TableCell>{item.eventName}</TableCell>
               <TableCell>{item.classification}</TableCell>
               <TableCell>{item.athleteName}</TableCell>
-              <TableCell>{item.gender}</TableCell>
+              <TableCell>{item.gender.toLocaleLowerCase()}</TableCell>
               <TableCell className="text-right">{item.value.toFixed(2)}</TableCell>
             </TableRow>
           ))}
