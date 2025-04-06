@@ -236,15 +236,6 @@ export function DataForm({ onSubmit }: DataFormProps) {
             setOpenClassification,
             "classification"
           )}
-            {/* Athlete Name Dropdown */}
-            {renderDropdown(
-            "Athlete Name",
-            formData.athleteName,
-            athleteOptions,
-            openAthlete,
-            setOpenAthlete,
-            "athleteName"
-          )}
 
           {/* Gender Dropdown */}
           {renderDropdown(
@@ -254,6 +245,16 @@ export function DataForm({ onSubmit }: DataFormProps) {
             openGender,
             setOpenGender,
             "gender"
+          )}
+
+          {/* Athlete Name Dropdown */}
+          {renderDropdown(
+            "Athlete Name",
+            formData.athleteName,
+            athleteOptions,
+            openAthlete,
+            setOpenAthlete,
+            "athleteName"
           )}
 
           {/* Performance Input */}

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,10 +16,13 @@ import {
 } from "@/components/ui/select";
 
 interface DataItem {
-  key: string;
-  value: string;
-  Name: string;
+  sportEvent: string;
+  eventName: string;
   classification: string;
+  gender: string;
+  athleteName: string;
+  value: number;
+  unit: string;
 }
 
 export function DataDashboard() {
@@ -30,15 +31,32 @@ export function DataDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  
+  // Search and Filter States
   const [searchValue, setSearchValue] = useState("");
-  const [searchField, setSearchField] = useState<"Name" | "classification" | "key">("Name");
+  const [searchField, setSearchField] = useState<"eventName" | "classification" | "athleteName">("eventName");
+  const [sportEventFilter, setSportEventFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [classificationFilter, setClassificationFilter] = useState("all");
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/data?sortOrder=${sortOrder}&searchField=${searchField}&searchValue=${searchValue}`
-      );
+      const params = new URLSearchParams({
+        sortOrder: sortOrder,
+      });
+
+      // Add search filter
+      if (searchValue) {
+        params.set(searchField, searchValue);
+      }
+
+      // Add other filters (only if not "all")
+      if (sportEventFilter !== "all") params.set("sportEvent", sportEventFilter);
+      if (genderFilter !== "all") params.set("gender", genderFilter);
+      if (classificationFilter !== "all") params.set("classification", classificationFilter);
+
+      const response = await fetch(`/api/data?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -58,14 +76,15 @@ export function DataDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, [sortOrder, searchField, searchValue]);
+  }, [sortOrder, searchValue, searchField, sportEventFilter, genderFilter, classificationFilter]);
 
   const handleSearchValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
 
-  const handleSearchFieldChange = (value: "Name" | "classification" | "key") => {
+  const handleSearchFieldChange = (value: "eventName" | "classification" | "athleteName") => {
     setSearchField(value);
+    setSearchValue(""); // Reset search value when changing field
   };
 
   const handleAddData = async (newData: DataItem) => {
@@ -109,6 +128,8 @@ export function DataDashboard() {
               Refresh
             </button>
           </div>
+          
+          {/* Search Section */}
           <div className="mt-4 flex gap-2">
             <Select 
               value={searchField} 
@@ -118,18 +139,68 @@ export function DataDashboard() {
                 <SelectValue placeholder="Search by..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Name">Event Name</SelectItem>
+                <SelectItem value="eventName">Event Name</SelectItem>
                 <SelectItem value="classification">Classification</SelectItem>
-                <SelectItem value="key">Player Name</SelectItem>
+                <SelectItem value="athleteName">Athlete Name</SelectItem>
               </SelectContent>
             </Select>
             <Input
               type="text"
-              placeholder={`Search by ${searchField.toLowerCase()}...`}
+              placeholder={`Search by ${searchField.replace(/([A-Z])/g, ' $1').toLowerCase()}...`}
               value={searchValue}
               onChange={handleSearchValueChange}
               className="flex-1"
             />
+          </div>
+
+          {/* Filter Section */}
+          <div className="mt-4 flex gap-2 flex-wrap">
+            {/* Sport Event Filter */}
+            <Select
+              value={sportEventFilter}
+              onValueChange={setSportEventFilter}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sport Event" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Events</SelectItem>
+                <SelectItem value="Football">Football</SelectItem>
+                <SelectItem value="Athletics">Athletics</SelectItem>
+                <SelectItem value="Swimming">Swimming</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Gender Filter */}
+            <Select
+              value={genderFilter}
+              onValueChange={setGenderFilter}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Genders</SelectItem>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Classification Filter */}
+            <Select
+              value={classificationFilter}
+              onValueChange={setClassificationFilter}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Classification" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Classifications</SelectItem>
+                <SelectItem value="Track">Track</SelectItem>
+                <SelectItem value="Field">Field</SelectItem>
+                <SelectItem value="Marathon">Marathon</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
